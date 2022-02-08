@@ -1,0 +1,101 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+install.packages("broom")
+install.packages("ggpubr")
+
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(ggpubr)
+#Load dataset 
+patron.df <- read.csv("phibdata.csv", header=TRUE)
+
+#Summary statistics
+summary(patron.df)
+
+#Plots for Donation Amount 
+hist(patron.df$donation, col = "cyan", main = "Histogram of Donation Amount to Amphibian Stage Productions", xlab ="Donation Amount", ylab = "Frequency")
+boxplot(patron.df$donation, col ="cyan", main  = "Boxplot for Donation Amount to Amphibian Stage Productions")
+
+
+#plots for Age
+hist(patron.df$age, col = "red", main = "Histogram of Ages for Individuals who Made Donations to 
+     Amphibian Stage Productions", xlab ="Age", ylab = "Frequency")
+boxplot(patron.df$age, col ="red", main  = "Boxplot for Individual Age for Amphibian Stage Productions Donations")
+summary(patron.df$gender)
+
+#plots for Number of children
+hist(patron.df$X._of_children, col = "plum", main = "Histogram of Number of Children for Individuals who Made Donations to 
+     Amphibian Stage Productions", xlab ="Number of Children", ylab = "Frequency") 
+boxplot(patron.df$age, col ="plum", main  = "Boxplot for Number of Children for Individuals Who Donated to Amphibian Stage Productions Donations")
+
+```
+
+
+```{r} 
+data <- patron.df
+#Change gender from a categorical variable to a numerical variable
+data$new_gender <-sapply(data$gender, unclass)
+```
+
+
+```{r}
+#change marital status from a categorical variable to a numerical variable
+data$new_status <- sapply(data$status, unclass)
+
+head(data)
+
+
+summary(data)
+#linear distribution for variables
+plot(donation ~ age, col = "red", main = "Scatterplot for Age vs Donation Amount for 
+     Amphibian Stage Productions Donors", ylab = "Donation Amount (US Dollars)", xlab= "Age", data = data)
+
+plot(donation ~ X._of_children, col = "plum", main = "Scatterplot for Number of Children vs Donation Amount for 
+     Amphibian Stage Productions Donors", ylab = "Donation Amount (US Dollars)", xlab= "Number of Children", data = data)
+
+plot(donation ~ new_gender, col = "dark blue",main = "Scatterplot for Gender vs Donation Amount for 
+     Amphibian Stage Productions Donors", ylab = "Donation Amount (US Dollars)", xlab ="Gender", data = data)
+
+plot(donation ~ new_status, col = "dark green",main = "Scatterplot for Marital Status vs Donation Amount for 
+     Amphibian Stage Productions Donors", xlab = "Marital Status", ylab= "Donation Amount (US Dollars)", data = data)
+#Multiple linear regression model 
+multi.fit <- lm(formula = data$donation ~ data$age + data$new_status + data$new_gender + data$X._of_children, data = data)
+summary(multi.fit)
+
+#correlation tests for variables
+cor.test(data$age, data$donation, method=c("pearson", "kendall", "spearman"))
+cor.test(data$X._of_children, data$donation, method=c("pearson", "kendall", "spearman"))
+cor.test(data$new_gender, data$donation, method=c("pearson", "kendall", "spearman"))
+cor.test(data$new_status, data$donation, method=c("pearson", "kendall", "spearman"))
+```
+
+```{r}
+#Add second dataset
+show_types <- read.csv("phib2.csv", header=TRUE)
+summary(show_types)
+head(show_types)
+
+
+library("lsr")
+#Change factor variables to numeric 
+show_types$new_type <- sapply(show_types$Type_Avg, unclass)
+
+show_types$new_avg <- sapply(show_types$Average, unclass)
+#Remove non-numerical columns 
+shows2 <- show_types[-c(1:2)]
+head(shows2)
+#Chi-square 
+table(shows2$new_type, shows2$new_avg)
+chisq.test(shows2$new_type, shows2$new_avg, correct=FALSE)
+#Cramer's V
+cramersV(shows2)
+```
