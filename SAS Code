@@ -1,0 +1,25 @@
+ods noproctitle;
+
+/*** Analyze numeric variables ***/
+title "Descriptive Statistics for Numeric Variables";
+
+proc means data=WORK.IMPORT n nmiss min mean median max std;
+	var donation age '#_of_children'n;
+run;
+
+title;
+
+proc univariate data=WORK.IMPORT noprint;
+	histogram donation age '#_of_children'n;
+run;
+
+
+
+ods noproctitle;
+
+/*** Analyze categorical variables ***/
+title "Frequencies for Categorical Variables";
+
+proc freq data=WORK.IMPORT;
+	tables gender status / plots=(freqplot);
+run;
